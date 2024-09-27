@@ -1,38 +1,67 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 20px;
+document.addEventListener("DOMContentLoaded", loadTodos);
+document.getElementById("todo-form").addEventListener("submit", addTodo);
+
+function addTodo(event) {
+    event.preventDefault();
+    const input = document.getElementById("todo-input");
+    const todoText = input.value.trim();
+
+    // Validation
+    if (todoText === "") {
+        alert("Please enter a task.");
+        input.classList.add("error");
+        return;
+    } else if (todoText.length < 3) {
+        alert("Task must be at least 3 characters long.");
+        input.classList.add("error");
+        return;
+    } else {
+        input.classList.remove("error");
+    }
+
+    const todoList = document.getElementById("todo-list");
+    const li = document.createElement("li");
+    li.innerHTML = `
+        ${todoText} <button onclick="removeTodo(this)">Remove</button>
+        <button onclick="toggleComplete(this)">Done</button>
+    `;
+    todoList.appendChild(li);
+    saveTodoToLocalStorage(todoText);
+    input.value = "";
 }
-.container {
-    max-width: 500px;
-    margin: auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+function removeTodo(button) {
+    const li = button.parentElement;
+    li.remove();
+    removeTodoFromLocalStorage(li.firstChild.textContent);
 }
-h1 {
-    text-align: center;
+
+function toggleComplete(button) {
+    const li = button.parentElement;
+    li.classList.toggle("completed");
 }
-input {
-    width: 70%;
-    padding: 10px;
-    margin-right: 10px;
+
+function saveTodoToLocalStorage(todo) {
+    let todos = localStorage.getItem("todos") ? JSON.parse(localStorage.getItem("todos")) : [];
+    todos.push(todo);
+    localStorage.setItem("todos", JSON.stringify(todos));
 }
-button {
-    padding: 10px;
+
+function removeTodoFromLocalStorage(todo) {
+    let todos = JSON.parse(localStorage.getItem("todos"));
+    todos = todos.filter(t => t !== todo);
+    localStorage.setItem("todos", JSON.stringify(todos));
 }
-.error {
-    border: 2px solid red;
-}
-li {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid #ccc;
-}
-.completed {
-    text-decoration: line-through;
-    color: gray;
+
+function loadTodos() {
+    let todos = localStorage.getItem("todos") ? JSON.parse(localStorage.getItem("todos")) : [];
+    todos.forEach(todo => {
+        const todoList = document.getElementById("todo-list");
+        const li = document.createElement("li");
+        li.innerHTML = `
+            ${todo} <button onclick="removeTodo(this)">Remove</button>
+            <button onclick="toggleComplete(this)">Done</button>
+        `;
+        todoList.appendChild(li);
+    });
 }
